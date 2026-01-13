@@ -44,11 +44,6 @@ function playSound(type) {
       playTone(1000, 0.15, 'square', 0.3, 0.15);
       playTone(1200, 0.3, 'square', 0.3, 0.3);
       break;
-    case 'encouragement':
-      playTone(1000, 0.08, 'square', 0.15);
-      playTone(1200, 0.08, 'square', 0.15, 0.08);
-      playTone(1400, 0.08, 'square', 0.15, 0.16);
-      break;
     case 'click':
       playTone(1000, 0.1, 'square', 0.1);
       break;
@@ -65,13 +60,12 @@ function startBgMusic() {
   const gainNode = audioCtx.createGain();
   bgMusic.connect(gainNode);
   gainNode.connect(audioCtx.destination);
-  bgMusic.frequency.value = 220; // Low bass
+  bgMusic.frequency.value = 220;
   bgMusic.type = 'sawtooth';
   gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
   bgMusic.start();
-  // Simple melody loop
   let noteIndex = 0;
-  const notes = [220, 330, 440, 330, 220, 330, 440, 330]; // Simple retro tune
+  const notes = [220, 330, 440, 330, 220, 330, 440, 330];
   setInterval(() => {
     if (isPaused) return;
     bgMusic.frequency.setValueAtTime(notes[noteIndex % notes.length], audioCtx.currentTime);
@@ -84,36 +78,63 @@ function stopBgMusic() {
 }
 
 // GAME VARIABLES
-let score = 0,
-  life = 3,
-  combo = 1,
-  isPaused = false;
-let meteor, fallInterval, problem;
+let score = 0, life = 3, combo = 1, isPaused = false;
+let problem, currentAnswer;
 let speed, maxNum, ops;
-let answered = 0,
-  correct = 0;
-let timerInterval,
-  timeLeft = 60;
-let playerName = '',
-  levelName = '';
+let answered = 0, correct = 0;
+let timerInterval, timeLeft = 60;
+let playerName = '', levelName = '';
 let gameData = {};
+let meteors = []; // Array untuk 3 meteor
+let fallIntervals = []; // Array untuk tracking interval
 
 // DOM ELEMENTS
-const scoreEl = document.getElementById('score');
-const lifeEl = document.getElementById('life');
-const answer = document.getElementById('answer');
-const progressBar = document.getElementById('progress-bar');
-const message = document.getElementById('message');
-const game = document.getElementById('game');
-const alertBox = document.getElementById('wrong-alert');
-const comboPopup = document.getElementById('combo-popup');
-const ship = document.getElementById('ship');
-const laser = document.getElementById('laser');
+let scoreEl, lifeEl, progressBar, message, game, alertBox, comboPopup, ship, laser, problemDisplay;
+
+function initDOM() {
+  scoreEl = document.getElementById('score');
+  lifeEl = document.getElementById('life');
+  progressBar = document.getElementById('progress-bar');
+  message = document.getElementById('message');
+  game = document.getElementById('game');
+  alertBox = document.getElementById('wrong-alert');
+  comboPopup = document.getElementById('combo-popup');
+  ship = document.getElementById('ship');
+  laser = document.getElementById('laser');
+  problemDisplay = document.getElementById('problem-display');
+  
+  // Add event listeners
+  ship.addEventListener('click', () => {
+    if (!isPaused && timeLeft > 0) {
+      fireLaser();
+    }
+  });
+
+  ship.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    if (!isPaused && timeLeft > 0) {
+      fireLaser();
+    }
+  });
+
+  document.addEventListener('touchmove', (e) => {
+    if (!isPaused && timeLeft > 0 && meteors.length > 0) {
+      const touch = e.touches[0];
+      touchX = touch.clientX;
+    }
+  }, false);
+
+  document.addEventListener('touchend', () => {
+    touchX = null;
+  }, false);
+}
 
 let shipX = innerWidth / 2 - 35;
+let shipY = innerHeight - 180;
 let keys = {};
-let shipSpeed = 5;
+let shipSpeed = 7;
 let shipInterval;
+let touchX = null;
 
 // UI FUNCTIONS
 function shake() {
@@ -139,89 +160,207 @@ function showCombo() {
 
 // GAME LOGIC
 function setLevel() {
-  const lvl = level.value;
+  const lvl = document.getElementById('level').value;
   levelName = lvl.toUpperCase();
   if (lvl === 'easy') {
-    speed = 1.2;
+    speed = 2;
     maxNum = 10;
     ops = ['+', '−'];
   }
   if (lvl === 'medium') {
-    speed = 1.8;
+    speed = 3;
     maxNum = 20;
     ops = ['+', '−', '×'];
   }
   if (lvl === 'hard') {
-    speed = 2.6;
+    speed = 4;
     maxNum = 30;
     ops = ['+', '−', '×', '÷'];
   }
 }
 
 function genProblem() {
-  let a = ~~(Math.random() * maxNum) + 1;
-  let b = ~~(Math.random() * maxNum) + 1;
-  let op = ops[~~(Math.random() * ops.length)];
-  let ans;
-  if (op === '÷') {
-    a = a * b;
-    ans = a / b;
+  let a, b, op, ans;
+  let validProblem = false;
+  
+  // Keep generating until we have a valid problem with integer answer
+  while (!validProblem) {
+    a = ~~(Math.random() * maxNum) + 1;
+    b = ~~(Math.random() * maxNum) + 1;
+    op = ops[~~(Math.random() * ops.length)];
+    
+    if (op === '÷') {
+      // Untuk pembagian, pastikan a habis dibagi b
+      ans = a / b;
+      if (Number.isInteger(ans)) {
+        validProblem = true;
+      }
+    } else if (op === '×') {
+      ans = a * b;
+      validProblem = true;
+    } else if (op === '+') {
+      ans = a + b;
+      validProblem = true;
+    } else if (op === '−') {
+      // Pengurangan pastikan hasilnya positif
+      ans = a - b;
+      if (ans > 0) {
+        validProblem = true;
+      }
+    }
   }
-  if (op === '×') ans = a * b;
-  if (op === '+') ans = a + b;
-  if (op === '−') ans = a - b;
+  
+  ans = Math.round(ans);
   return { text: `${a} ${op} ${b}`, answer: ans };
 }
 
 function spawnMeteor() {
-  if (meteor) meteor.remove();
-  clearInterval(fallInterval);
+  // Clear old meteors
+  meteors.forEach(m => m.remove());
+  meteors = [];
+  fallIntervals.forEach(interval => clearInterval(interval));
+  fallIntervals = [];
+  
   problem = genProblem();
-  meteor = document.createElement('div');
-  meteor.className = 'meteor';
-  meteor.textContent = problem.text;
-  meteor.style.left = Math.random() * (innerWidth - 80) + 'px';
-  meteor.style.top = '80px';
-  game.appendChild(meteor);
-  answer.disabled = false;
-  answer.focus();
-  // Jeda 3 detik sebelum meteor mulai jatuh
-  setTimeout(fallMeteor, 3000);
+  currentAnswer = problem.answer;
+  
+  problemDisplay.textContent = `📝 ${problem.text}`;
+  
+  // Generate 3 jawaban: 1 benar + 2 salah
+  let answers = [currentAnswer];
+  while (answers.length < 3) {
+    let wrongAns = ~~(Math.random() * (maxNum * 2)) + 1;
+    if (!answers.includes(wrongAns)) {
+      answers.push(wrongAns);
+    }
+  }
+  answers.sort(() => Math.random() - 0.5); // Shuffle
+  
+  // Create 3 meteor
+  const positions = [
+    innerWidth * 0.25,
+    innerWidth * 0.5,
+    innerWidth * 0.75
+  ];
+  
+  answers.forEach((ans, idx) => {
+    const meteor = document.createElement('div');
+    meteor.className = 'meteor';
+    meteor.textContent = ans;
+    meteor.style.left = positions[idx] - 50 + 'px';
+    meteor.style.top = '50px';
+    meteor.style.cursor = 'default';
+    meteor.dataset.answer = ans;
+    meteor.dataset.correct = (ans === currentAnswer) ? 'true' : 'false';
+    game.appendChild(meteor);
+    meteors.push(meteor);
+  });
+  
+  fallMeteors();
 }
 
-function fallMeteor() {
-  let y = 80;
-  fallInterval = setInterval(() => {
-    if (isPaused) return;
-    y += speed;
-    meteor.style.top = y + 'px';
-    if (y > innerHeight - 180) {
-      playSound('fall');
-      loseLife();
-    }
-  }, 30);
+function fallMeteors() {
+  meteors.forEach((meteor, idx) => {
+    let y = 50;
+    const interval = setInterval(() => {
+      if (isPaused || !meteor.parentNode) {
+        clearInterval(interval);
+        return;
+      }
+      y += speed;
+      meteor.style.top = y + 'px';
+      if (y > innerHeight - 150) {
+        clearInterval(interval);
+        playSound('fall');
+        // Jika yang jatuh adalah jawaban benar, lose life
+        if (meteor.dataset.correct === 'true') {
+          loseLife();
+        } else {
+          // Jika salah jatuh, destroy it saja
+          meteor.remove();
+          meteors = meteors.filter(m => m !== meteor);
+        }
+      }
+    }, 30);
+    fallIntervals.push(interval);
+  });
 }
 
 function fireLaser() {
-  if (!meteor) return;
-  playSound('laser');
+  if (meteors.length === 0 || isPaused || answered >= 12) return;
+  
+  // Find meteor yang paling dekat dengan ship (center bottom)
   const shipRect = ship.getBoundingClientRect();
-  const meteorRect = meteor.getBoundingClientRect();
-  const laserX = shipRect.left + shipRect.width / 2 - 2.5;
+  const shipCenterX = shipRect.left + shipRect.width / 2;
+  
+  let closestMeteor = null;
+  let minDist = 100; // tolerance 100px
+  
+  meteors.forEach(meteor => {
+    const meteorRect = meteor.getBoundingClientRect();
+    const meteorCenterX = meteorRect.left + meteorRect.width / 2;
+    const distX = Math.abs(meteorCenterX - shipCenterX);
+    if (distX < minDist) {
+      minDist = distX;
+      closestMeteor = meteor;
+    }
+  });
+  
+  if (!closestMeteor) return;
+  
+  const meteorRect = closestMeteor.getBoundingClientRect();
+  const laserX = shipCenterX - 2.5;
   const laserY = shipRect.top;
   const laserHeight = meteorRect.top - laserY;
+  
   laser.style.left = laserX + 'px';
   laser.style.top = laserY + 'px';
-  laser.style.height = laserHeight + 'px';
+  laser.style.height = Math.max(0, laserHeight) + 'px';
   laser.style.display = 'block';
-  // Laser tetap terlihat untuk durasi animasi
-  setTimeout(() => {
-    laser.style.display = 'none';
-    explodeMeteor();
-  }, 200);
+  playSound('laser');
+  
+  answered++;
+  
+  // Cek apakah yang diklik adalah jawaban benar
+  if (closestMeteor.dataset.correct === 'true') {
+    playSound('correct');
+    correct++;
+    combo = Math.min(combo + 1, 3);
+    score += combo;
+    scoreEl.textContent = `⭐ ${score} x${combo}`;
+    progressBar.style.width = (correct / 12) * 100 + '%';
+    showCombo();
+    
+    setTimeout(() => {
+      laser.style.display = 'none';
+      explodeMeteor(closestMeteor);
+      if (answered >= 12) {
+        // Game selesai! End immediately
+        setTimeout(endGame, 500);
+      } else {
+        setTimeout(spawnMeteor, 1000);
+      }
+    }, 200);
+  } else {
+    playSound('wrong');
+    shake();
+    showAlert('MELESET! JAWABAN SALAH!');
+    combo = 1;
+    
+    setTimeout(() => {
+      laser.style.display = 'none';
+      if (answered >= 12) {
+        // Game selesai! End immediately
+        setTimeout(endGame, 500);
+      } else {
+        setTimeout(spawnMeteor, 1000);
+      }
+    }, 200);
+  }
 }
 
-function explodeMeteor() {
+function explodeMeteor(meteor) {
+  if (!meteor) return;
   const meteorRect = meteor.getBoundingClientRect();
   const explosion = document.createElement('div');
   explosion.className = 'explosion';
@@ -230,44 +369,19 @@ function explodeMeteor() {
   explosion.style.width = '100px';
   explosion.style.height = '100px';
   game.appendChild(explosion);
+  
   meteor.remove();
-  meteor = null;
+  meteors = meteors.filter(m => m !== meteor);
   setTimeout(() => explosion.remove(), 500);
 }
 
-function submitAnswer() {
-  playSound('click');
-  if (answer.value.trim() === '') {
-    showAlert('JAWABAN KOSONG');
-    return;
-  }
-  answered++;
-  if (+answer.value === problem.answer) {
-    playSound('correct');
-    correct++;
-    combo = Math.min(combo + 1, 3);
-    score += combo;
-    scoreEl.textContent = `⭐ ${score} x${combo}`;
-    progressBar.style.width = (correct / 12) * 100 + '%';
-    showCombo();
-    fireLaser();
-    setTimeout(spawnMeteor, 500);
-  } else {
-    playSound('wrong');
-    combo = 1;
-    shake();
-    showAlert('KURANG BENAR');
-    loseLife();
-  }
-  answer.value = '';
-}
-
 function loseLife() {
-  clearInterval(fallInterval);
+  fallIntervals.forEach(interval => clearInterval(interval));
+  fallIntervals = [];
   life--;
-  lifeEl.textContent = '❤️'.repeat(life);
+  lifeEl.textContent = '❤️'.repeat(Math.max(life, 0));
   if (life <= 0) endGame();
-  else spawnMeteor();
+  else if (answered < 12) spawnMeteor();
 }
 
 function startTimer() {
@@ -285,6 +399,11 @@ function updateShip() {
   if (isPaused) return;
   if (keys['ArrowLeft'] || keys['a'] || keys['A']) shipX -= shipSpeed;
   if (keys['ArrowRight'] || keys['d'] || keys['D']) shipX += shipSpeed;
+  
+  if (touchX !== null) {
+    shipX = touchX - 35;
+  }
+  
   shipX = Math.max(0, Math.min(innerWidth - 70, shipX));
   ship.style.left = shipX + 'px';
 }
@@ -305,8 +424,17 @@ function beginGame() {
   scoreEl.textContent = '⭐ 0';
   lifeEl.textContent = '❤️❤️❤️';
   document.getElementById('start-screen').style.display = 'none';
+  
+  // Clear old meteors
+  meteors.forEach(m => m.remove());
+  meteors = [];
+  fallIntervals.forEach(interval => clearInterval(interval));
+  fallIntervals = [];
+  
   shipX = innerWidth / 2 - 35;
   ship.style.left = shipX + 'px';
+  ship.style.top = shipY + 'px';
+  
   shipInterval = setInterval(updateShip, 16);
   startTimer();
   spawnMeteor();
@@ -382,13 +510,15 @@ ${resultMessage}<br><br>
 
 function restart() {
   playSound('click');
-  meteor = null;
-  clearInterval(fallInterval);
-  clearInterval(timerInterval);
   clearInterval(shipInterval);
+  clearInterval(timerInterval);
+  fallIntervals.forEach(interval => clearInterval(interval));
+  fallIntervals = [];
   document.getElementById('end-screen').style.display = 'none';
   document.getElementById('start-screen').style.display = 'flex';
-  answer.value = '';
+  problemDisplay.textContent = '';
+  meteors.forEach(m => m.remove());
+  meteors = [];
 }
 
 function exportPDF() {
@@ -397,11 +527,9 @@ function exportPDF() {
   const { jsPDF } = jsPDFModule;
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
   let yPosition = 20;
 
   doc.setFont('courier');
-
   doc.setFontSize(22);
   doc.setTextColor(0, 102, 204);
   doc.setFont('courier', 'bold');
@@ -458,9 +586,19 @@ function exportPDF() {
 }
 
 // EVENT LISTENERS
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initDOM);
+} else {
+  initDOM();
+}
+
 window.addEventListener('keydown', (e) => {
   keys[e.key] = true;
-  if (e.key === 'Enter') submitAnswer();
+  // Klik space atau enter untuk tembak
+  if ((e.code === 'Space' || e.key === 'Enter') && !isPaused && timeLeft > 0) {
+    e.preventDefault();
+    fireLaser();
+  }
 });
 
 window.addEventListener('keyup', (e) => {
