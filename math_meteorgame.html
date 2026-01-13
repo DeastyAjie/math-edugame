@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#00eaff">
+  <meta name="description" content="Game edukatif untuk belajar matematika dengan tema meteor shooter">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Math Meteor">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%230b1026' width='192' height='192'/><circle cx='96' cy='96' r='80' fill='%2300eaff'/><polygon points='96,40 140,100 120,110 72,110 52,100' fill='%23ffffff'/><circle cx='96' cy='80' r='10' fill='%23ffaa00'/></svg>">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%230b1026' width='180' height='180'/><circle cx='90' cy='90' r='75' fill='%2300eaff'/><polygon points='90,35 135,95 115,105 65,105 45,95' fill='%23ffffff'/><circle cx='90' cy='75' r='10' fill='%23ffaa00'/></svg>">
+  <title>Math Meteor – Edu Game</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Fallback fonts untuk offline mode */
+    @font-face {
+      font-family: 'Press Start 2P Offline';
+      src: local('Courier New'), local('monospace');
+    }
+  </style>
+</head>
+
+<body>
+<div id="game">
+
+<div id="sky-danger"></div>
+<div id="wrong-alert"></div>
+<div id="combo-popup"></div>
+
+<div id="top-ui">
+  <div id="score">⭐ 0</div>
+  <div id="life">❤️❤️❤️</div>
+</div>
+
+<div id="progress-wrap"><div id="progress-bar"></div></div>
+<div id="message"></div>
+<div id="ship"></div>
+<div id="laser"></div>
+
+<div id="ui">
+  <input id="answer" placeholder="JAWABAN" disabled>
+  <button class="icon-btn" onclick="submitAnswer()">✔️</button>
+  <button class="icon-btn" onclick="togglePause()">⏸</button>
+</div>
+
+<!-- START -->
+<div id="start-screen" class="screen">
+  <div class="box">
+    <h3>MATH METEOR</h3><br>
+    <input id="playerName" placeholder="NAMA"><br><br>
+    <select id="level">
+      <option value="easy">EASY</option>
+      <option value="medium">MEDIUM</option>
+      <option value="hard">HARD</option>
+    </select><br><br>
+    <button onclick="beginGame()">MULAI</button>
+  </div>
+</div>
+
+<!-- PAUSE -->
+<div id="pause-screen" class="screen">
+  <div class="box">
+    <h3>PAUSED</h3><br>
+    <button onclick="togglePause()">RESUME</button><br>
+    <button onclick="confirmQuit()">QUIT</button>
+  </div>
+</div>
+
+<!-- END -->
+<div id="end-screen" class="screen">
+  <div class="box">
+    <h3>HASIL AKHIR</h3><br>
+    <div id="final-score" style="text-align:left;font-size:11px;line-height:1.8"></div>
+    <button onclick="exportPDF()">📄 EXPORT PDF</button><br>
+    <button onclick="restart()">MAIN LAGI</button>
+  </div>
+</div>
+
+<!-- CONFIRM -->
+<div id="confirm-screen" class="screen" style="display:none">
+  <div class="box">
+    <h3>KELUAR GAME?</h3><br>
+    <p style="font-size:11px;line-height:1.6">
+      Progress akan hilang.<br>Yakin ingin keluar?
+    </p><br>
+    <button onclick="doQuit()">YA</button>
+    <button onclick="closeConfirm()">BATAL</button>
+  </div>
+</div>
+
+</div>
+
+<!-- SOUND -->
+<!-- CONFETTI -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<!-- PDF EXPORT -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- GAME SCRIPT -->
+<script src="script.js"></script>
+<!-- SERVICE WORKER REGISTRATION -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(registration => {
+        console.log('Service Worker registered:', registration);
+      })
+      .catch(error => {
+        console.log('Service Worker registration failed:', error);
+      });
+  });
+}
+</script>
+</body>
+</html>
