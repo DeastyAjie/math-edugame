@@ -332,10 +332,12 @@ function doQuit() {
 }
 
 function endGame() {
-  playSound('victory');
   stopBgMusic();
   clearInterval(timerInterval);
   clearInterval(shipInterval);
+
+  const accuracy = Math.round((correct / answered) * 100) || 0;
+  const isPassed = accuracy >= 70;
 
   gameData = {
     playerName: playerName,
@@ -344,23 +346,31 @@ function endGame() {
     correct: correct,
     answered: answered,
     timeLeft: timeLeft,
-    accuracy: Math.round((correct / answered) * 100) || 0,
+    accuracy: accuracy,
     date: new Date().toLocaleDateString('id-ID'),
     time: new Date().toLocaleTimeString('id-ID'),
   };
 
-  confetti({
-    particleCount: 100,
-    spread: 70,
-    origin: { y: 0.6 },
-  });
+  if (isPassed) {
+    playSound('victory');
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+    });
+  }
+
+  const resultMessage = isPassed 
+    ? `🎉 SELAMAT 🎉<br>Kamu Luar Biasa!` 
+    : `💪 Bagus Coba Lagi 💪<br>Jangan Menyerah!`;
 
   document.getElementById('final-score').innerHTML = `
+${resultMessage}<br><br>
 👤 ${playerName}<br>
 🎮 ${levelName}<br>
 ⭐ Skor: ${score}<br>
 📊 Jawaban Benar: ${correct}/12<br>
-🎯 Akurasi: ${~~((correct / answered) * 100)}%<br>
+🎯 Akurasi: ${accuracy}%<br>
 ⏱ Sisa Waktu: ${timeLeft}s
   `;
   document.getElementById('end-screen').style.display = 'flex';
