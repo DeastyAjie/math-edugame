@@ -39,6 +39,11 @@ function playSound(type) {
     case 'gameOver':
       playTone(300, 1, 'sawtooth', 0.5);
       break;
+    case 'victory':
+      playTone(800, 0.15, 'square', 0.3);
+      playTone(1000, 0.15, 'square', 0.3, 0.15);
+      playTone(1200, 0.3, 'square', 0.3, 0.3);
+      break;
     case 'click':
       playTone(1000, 0.1, 'square', 0.1);
       break;
@@ -327,7 +332,7 @@ function doQuit() {
 }
 
 function endGame() {
-  playSound('gameOver');
+  playSound('victory');
   stopBgMusic();
   clearInterval(timerInterval);
   clearInterval(shipInterval);
