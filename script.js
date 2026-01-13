@@ -44,6 +44,11 @@ function playSound(type) {
       playTone(1000, 0.15, 'square', 0.3, 0.15);
       playTone(1200, 0.3, 'square', 0.3, 0.3);
       break;
+    case 'encouragement':
+      playTone(1000, 0.08, 'square', 0.15);
+      playTone(1200, 0.08, 'square', 0.15, 0.08);
+      playTone(1400, 0.08, 'square', 0.15, 0.16);
+      break;
     case 'click':
       playTone(1000, 0.1, 'square', 0.1);
       break;
@@ -352,7 +357,6 @@ function endGame() {
   };
 
   if (isPassed) {
-    playSound('victory');
     confetti({
       particleCount: 100,
       spread: 70,
