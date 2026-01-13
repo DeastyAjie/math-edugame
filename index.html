@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#00eaff">
   <meta name="description" content="Game edukatif untuk belajar matematika dengan tema meteor shooter">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Math Meteor">
@@ -37,14 +38,17 @@
   <div id="life">❤️❤️❤️</div>
 </div>
 
-<div id="progress-wrap"><div id="progress-bar"></div></div>
 <div id="message"></div>
+
+<!-- PROBLEM DISPLAY -->
+<div id="problem-display"></div>
+
+<div id="progress-wrap"><div id="progress-bar"></div></div>
+
 <div id="ship"></div>
 <div id="laser"></div>
 
 <div id="ui">
-  <input id="answer" placeholder="JAWABAN" disabled>
-  <button class="icon-btn" onclick="submitAnswer()">✔️</button>
   <button class="icon-btn" onclick="togglePause()">⏸</button>
 </div>
 
@@ -105,6 +109,15 @@
 <!-- SERVICE WORKER REGISTRATION -->
 <script>
 if ('serviceWorker' in navigator) {
+  // Clear old cache versions
+  caches.keys().then(cacheNames => {
+    cacheNames.forEach(cacheName => {
+      if (cacheName !== 'math-meteor-v16') {
+        caches.delete(cacheName);
+      }
+    });
+  });
+  
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js')
       .then(registration => {
