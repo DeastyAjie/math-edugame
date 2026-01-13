@@ -65,17 +65,23 @@ body {
 }
 
 .meteor {
-  position: absolute;
-  width: 75px;
-  height: 75px;
+  position: relative;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
   background: radial-gradient(circle at 30% 30%, #888, #5a3b1e 60%, #2a1a0f);
   box-shadow: 0 0 25px rgba(255, 120, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 20px;
   text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.meteor:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 35px rgba(255, 120, 0, 1);
 }
 
 #laser {
@@ -156,7 +162,7 @@ body {
 
 #progress-wrap {
   position: absolute;
-  top: 35px;
+  top: 120px;
   left: 50%;
   transform: translateX(-50%);
   width: 75%;
@@ -240,6 +246,32 @@ body {
   font-size: 18px;
 }
 
+#problem-display {
+  text-align: center;
+  margin-top: 20px;
+  padding: 15px 30px;
+  font-size: 24px;
+  color: #000;
+  background: linear-gradient(135deg, #ffff00, #ffdd00);
+  border: 3px solid #000;
+  border-radius: 10px;
+  font-weight: bold;
+  box-shadow: 0 0 15px rgba(255, 255, 0, 0.6), inset 0 0 10px rgba(255, 255, 100, 0.5);
+  display: inline-block;
+  transform: translateX(-50%);
+  left: 50%;
+  position: relative;
+}
+
+#meteors-container {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 80px;
+  flex-wrap: wrap;
+  padding: 0 20px;
+}
+
 .screen {
   position: absolute;
   inset: 0;
@@ -282,4 +314,285 @@ button {
   border-radius: 8px;
   border: none;
   background: #00eaff;
+}
+
+/* ========== RESPONSIVE DESIGN ========== */
+
+/* TABLET (768px - 1024px) */
+@media (max-width: 1024px) {
+  #ship {
+    width: 60px;
+    height: 60px;
+    bottom: 120px;
+  }
+
+  .meteor {
+    width: 80px;
+    height: 80px;
+    font-size: 16px;
+  }
+
+  #laser {
+    width: 4px;
+  }
+
+  #problem-display {
+    font-size: 18px;
+    margin-top: 15px;
+  }
+
+  #top-ui {
+    font-size: 10px;
+  }
+
+  #message {
+    font-size: 11px;
+    margin-top: 50px;
+  }
+
+  #combo-popup {
+    font-size: 20px;
+  }
+
+  #wrong-alert {
+    font-size: 18px;
+  }
+
+  .box {
+    padding: 20px;
+  }
+
+  input,
+  select {
+    width: 140px;
+    padding: 8px;
+    font-size: 11px;
+  }
+
+  button {
+    padding: 8px 12px;
+    font-size: 10px;
+  }
+}
+
+/* MOBILE LANDSCAPE (480px - 768px) */
+@media (max-width: 768px) {
+  #ship {
+    width: 50px;
+    height: 50px;
+    bottom: 100px;
+  }
+
+  .meteor {
+    width: 70px;
+    height: 70px;
+    font-size: 14px;
+  }
+
+  #laser {
+    width: 3px;
+    box-shadow: 0 0 8px #00ff88, 0 0 15px #00ff88, 0 0 20px #00ff88 !important;
+  }
+
+  #problem-display {
+    font-size: 16px;
+    margin-top: 12px;
+  }
+
+  #top-ui {
+    font-size: 9px;
+    padding: 0 10px;
+  }
+
+  #progress-wrap {
+    width: 70%;
+    height: 10px;
+  }
+
+  #message {
+    font-size: 10px;
+    margin-top: 45px;
+  }
+
+  #combo-popup {
+    font-size: 18px;
+  }
+
+  #wrong-alert {
+    font-size: 16px;
+    top: 42%;
+  }
+
+  .icon-btn {
+    width: 45px;
+    height: 45px;
+    font-size: 16px;
+  }
+
+  .box {
+    padding: 18px;
+    border-radius: 10px;
+  }
+
+  input,
+  select {
+    width: 130px;
+    padding: 8px;
+    font-size: 10px;
+  }
+
+  button {
+    padding: 8px 10px;
+    font-size: 10px;
+    margin-top: 8px;
+  }
+
+  #ui {
+    bottom: 15px;
+  }
+}
+
+/* MOBILE PORTRAIT (320px - 480px) */
+@media (max-width: 480px) {
+  #ship {
+    width: 45px;
+    height: 45px;
+    bottom: 80px;
+  }
+
+  .meteor {
+    width: 65px;
+    height: 65px;
+    font-size: 12px;
+  }
+
+  #laser {
+    width: 3px;
+  }
+
+  #problem-display {
+    font-size: 14px;
+    margin-top: 10px;
+  }
+
+  #top-ui {
+    font-size: 8px;
+    padding: 0 8px;
+    gap: 15px;
+  }
+
+  #progress-wrap {
+    width: 65%;
+    height: 8px;
+    top: 32px;
+  }
+
+  #message {
+    font-size: 9px;
+    margin-top: 40px;
+  }
+
+  #combo-popup {
+    font-size: 16px;
+  }
+
+  #wrong-alert {
+    font-size: 14px;
+    top: 40%;
+  }
+
+  #ui {
+    bottom: 12px;
+    gap: 8px;
+  }
+
+  .icon-btn {
+    width: 42px;
+    height: 42px;
+    font-size: 14px;
+  }
+
+  .box {
+    padding: 16px;
+    border-radius: 8px;
+    max-width: 90%;
+  }
+
+  .box h3 {
+    font-size: 14px !important;
+    margin: 0 0 12px 0;
+  }
+
+  .box p {
+    font-size: 10px !important;
+    line-height: 1.5;
+  }
+
+  #final-score {
+    font-size: 9px !important;
+    line-height: 1.6 !important;
+  }
+
+  input,
+  select {
+    width: 120px;
+    padding: 6px;
+    font-size: 9px;
+  }
+
+  button {
+    padding: 6px 8px;
+    font-size: 9px;
+    margin-top: 6px;
+    width: 100%;
+  }
+}
+
+/* SMALL MOBILE (< 320px) */
+@media (max-width: 320px) {
+  #ship {
+    width: 40px;
+    height: 40px;
+    bottom: 70px;
+  }
+
+  .meteor {
+    width: 60px;
+    height: 60px;
+    font-size: 11px;
+  }
+
+  #problem-display {
+    font-size: 12px;
+    margin-top: 8px;
+  }
+
+  #top-ui {
+    font-size: 7px;
+  }
+
+  #message {
+    font-size: 8px;
+    margin-top: 35px;
+  }
+
+  #combo-popup {
+    font-size: 14px;
+  }
+
+  .box {
+    padding: 14px;
+  }
+
+  input,
+  select {
+    width: 110px;
+    padding: 5px;
+    font-size: 8px;
+  }
+
+  button {
+    padding: 5px 6px;
+    font-size: 8px;
+  }
 }
