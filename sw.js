@@ -1,8 +1,8 @@
 // Service Worker untuk Math Meteor PWA
-const CACHE_NAME = 'math-meteor-v1';
+const CACHE_NAME = 'math-meteor-v2';
 const urlsToCache = [
   '/',
-  '/math_meteorgame.html',
+  '/index.html',
   '/script.js',
   '/style.css',
   '/manifest.json',
@@ -70,7 +70,7 @@ self.addEventListener('fetch', event => {
       })
       .catch(() => {
         // Return offline page or cached response
-        return caches.match('/math_meteorgame.html');
+        return caches.match('/index.html');
       })
   );
 });
