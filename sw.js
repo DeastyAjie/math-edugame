@@ -1,15 +1,10 @@
 // Service Worker untuk Math Meteor PWA
-const CACHE_NAME = 'math-meteor-v2';
+const CACHE_NAME = 'math-meteor-v16';
 const urlsToCache = [
-  '/',
   '/index.html',
   '/script.js',
   '/style.css',
-  '/manifest.json',
-  // Font URLs untuk offline support
-  'https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap',
-  'https://fonts.gstatic.com/s/pressstart2p/v14/e3t5nvrmZejLUFlSryn1VQrCp7cMw.woff2',
-  'https://fonts.gstatic.com/s/pressstart2p/v14/e3t5nvrmZejLUFlSryn1VQZE9zw.woff'
+  '/manifest.json'
 ];
 
 // Install event - cache files
